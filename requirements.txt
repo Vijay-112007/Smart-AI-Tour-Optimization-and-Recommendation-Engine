@@ -1,0 +1,9 @@
+# Smart AI Trip Recommendation and Optimization Engine
+
+## Current Dependencies
+
+requests
+pandas
+python-dateutil
+geopy
+networkx

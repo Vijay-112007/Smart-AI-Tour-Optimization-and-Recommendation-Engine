@@ -20,3 +20,12 @@ travel in real time.
 <li>Find the major suitable transportation that user may prefer</li>
 <li>Start Planning from the time of start to the checkpoints by recommending the suitable transportation </li>
 </ul>
+
+
+## Objective 1 in feature_1_test.ipymb
+<ol>
+<li>First we will get the inputs from the user</li>
+<li>Structured Trip Object</li>
+<li>Geocode Origin & Destination</li>
+<li>Validate Coordinates</li>
+</ol>

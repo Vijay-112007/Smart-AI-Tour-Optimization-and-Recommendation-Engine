@@ -1,0 +1,2038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart AI Tour & Trip Optimization Engine</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-light: #eff6ff;
+      --secondary: #0d9488;
+      --secondary-hover: #0f766e;
+      --secondary-light: #f0fdfa;
+      --accent: #f59e0b;
+      --dark: #0f172a;
+      --card-bg: #ffffff;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --border-focus: #3b82f6;
+      --danger: #ef4444;
+      --danger-light: #fef2f2;
+      --success: #10b981;
+      --success-light: #ecfdf5;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 2px 4px rgba(0,0,0,0.04);
+      --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 20px 35px -10px rgba(0, 0, 0, 0.12), 0 10px 15px -5px rgba(0, 0, 0, 0.06);
+      --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-main);
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Ambient background graphics */
+    .bg-blobs {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.45;
+      animation: floatSlow 20s infinite alternate ease-in-out;
+    }
+    .blob-1 {
+      width: 450px;
+      height: 450px;
+      background: #bfdbfe;
+      top: -100px;
+      right: -100px;
+    }
+    .blob-2 {
+      width: 400px;
+      height: 400px;
+      background: #99f6e4;
+      bottom: -80px;
+      left: -80px;
+    }
+    @keyframes floatSlow {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(40px, 30px) scale(1.08); }
+    }
+
+    /* Container */
+    .container {
+      width: 100%;
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Navbar */
+    .navbar {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 72px;
+    }
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--dark);
+      font-weight: 700;
+      font-size: 1.15rem;
+    }
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+    }
+    .brand-badge {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-weight: 600;
+      margin-left: 6px;
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 20px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      outline: none;
+    }
+    .btn-primary {
+      background-color: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    }
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+    }
+    .btn-secondary {
+      background-color: var(--secondary);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(13, 148, 136, 0.25);
+    }
+    .btn-secondary:hover {
+      background-color: var(--secondary-hover);
+      transform: translateY(-1px);
+    }
+    .btn-outline {
+      background-color: transparent;
+      border-color: var(--border);
+      color: var(--text-main);
+    }
+    .btn-outline:hover {
+      background-color: var(--bg);
+      border-color: #cbd5e1;
+    }
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.82rem;
+      border-radius: 6px;
+    }
+    .btn-danger-outline {
+      border-color: #fca5a5;
+      color: var(--danger);
+      background: white;
+    }
+    .btn-danger-outline:hover {
+      background: var(--danger-light);
+    }
+
+    /* Views */
+    .view-section {
+      display: none;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .view-section.active {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ========================================================
+       AUTH VIEW (LOGIN & SIGN UP)
+       ======================================================== */
+    .auth-wrapper {
+      min-height: calc(100vh - 72px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 16px;
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 480px;
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      overflow: hidden;
+      position: relative;
+    }
+    .auth-header {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      color: white;
+      padding: 32px 32px 24px;
+      text-align: center;
+      position: relative;
+    }
+    .auth-header h2 {
+      font-size: 1.5rem;
+      margin-bottom: 6px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .auth-header p {
+      font-size: 0.88rem;
+      color: #94a3b8;
+    }
+
+    /* Tabs */
+    .auth-tabs {
+      display: flex;
+      background: #f1f5f9;
+      padding: 6px;
+      border-radius: 12px;
+      margin: 20px 32px 0;
+      gap: 6px;
+    }
+    .auth-tab-btn {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .auth-tab-btn.active {
+      background: white;
+      color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .auth-body {
+      padding: 28px 32px 32px;
+    }
+    .form-group {
+      margin-bottom: 18px;
+    }
+    .form-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .form-input {
+      width: 100%;
+      padding: 11px 14px 11px 40px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 0.92rem;
+      color: var(--text-main);
+      background: white;
+      transition: all 0.2s ease;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+    .form-input.is-invalid {
+      border-color: var(--danger);
+      background-color: #fffaf0;
+    }
+    .form-input.is-valid {
+      border-color: var(--success);
+    }
+    .input-icon-left {
+      position: absolute;
+      left: 13px;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .input-icon-right {
+      position: absolute;
+      right: 12px;
+      cursor: pointer;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      padding: 4px;
+    }
+    .input-icon-right:hover {
+      color: var(--text-main);
+    }
+    .field-hint {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      display: block;
+    }
+    .field-error {
+      font-size: 0.76rem;
+      color: var(--danger);
+      margin-top: 4px;
+      display: none;
+      font-weight: 500;
+    }
+    .field-error.show {
+      display: block;
+    }
+
+    /* Password strength meter */
+    .strength-meter {
+      height: 4px;
+      background: #e2e8f0;
+      border-radius: 2px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+    .strength-bar {
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s ease, background-color 0.3s ease;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 12px;
+    }
+    .form-row .form-group {
+      flex: 1;
+    }
+    .remember-forgot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.83rem;
+      margin-bottom: 20px;
+    }
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .demo-account-hint {
+      margin-top: 18px;
+      padding: 12px;
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* ========================================================
+       HOME DASHBOARD
+       ======================================================== */
+    .home-wrapper {
+      padding: 40px 0 60px;
+    }
+    .hero-banner {
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto 48px;
+    }
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: white;
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 16px;
+    }
+    .hero-pill .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--success);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+    }
+    .hero-title {
+      font-size: 2.6rem;
+      font-weight: 800;
+      color: var(--dark);
+      letter-spacing: -0.03em;
+      line-height: 1.18;
+      margin-bottom: 14px;
+    }
+    .hero-title span {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-desc {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    /* MAIN TWO CARDS (IN THE MIDDLE) */
+    .main-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 32px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .feature-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      border: 2px solid transparent;
+      box-shadow: var(--shadow-md);
+      padding: 36px 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+    }
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      opacity: 0.9;
+    }
+    .feature-card.trip-card::before {
+      background: linear-gradient(90deg, #2563eb, #3b82f6);
+    }
+    .feature-card.tour-card::before {
+      background: linear-gradient(90deg, #0d9488, #14b8a6);
+    }
+    .feature-card:hover {
+      transform: translateY(-8px);
+      box-shadow: var(--shadow-lg);
+      border-color: #cbd5e1;
+    }
+    .feature-card.trip-card:hover {
+      border-color: #93c5fd;
+    }
+    .feature-card.tour-card:hover {
+      border-color: #99f6e4;
+    }
+
+    .card-top {
+      margin-bottom: 24px;
+    }
+    .card-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+    }
+    .trip-card .card-badge {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+    .tour-card .card-badge {
+      background: var(--secondary-light);
+      color: var(--secondary);
+    }
+    .card-icon-wrapper {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .trip-card .card-icon-wrapper {
+      background: #eff6ff;
+      color: var(--primary);
+    }
+    .tour-card .card-icon-wrapper {
+      background: #f0fdfa;
+      color: var(--secondary);
+    }
+    .card-title {
+      font-size: 1.55rem;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 8px;
+    }
+    .card-tagline {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 12px;
+    }
+    .card-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    .card-features-list {
+      list-style: none;
+      margin-bottom: 28px;
+    }
+    .card-features-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.85rem;
+      color: #334155;
+      margin-bottom: 8px;
+    }
+    .card-features-list svg {
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .trip-card .card-features-list svg {
+      color: var(--primary);
+    }
+    .tour-card .card-features-list svg {
+      color: var(--secondary);
+    }
+
+    .card-bottom-btn {
+      width: 100%;
+      padding: 14px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 10px;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .trip-card .card-bottom-btn {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+    }
+    .trip-card .card-bottom-btn:hover {
+      background: var(--primary-hover);
+    }
+    .tour-card .card-bottom-btn {
+      background: var(--secondary);
+      color: white;
+      box-shadow: 0 4px 14px rgba(13, 148, 136, 0.25);
+    }
+    .tour-card .card-bottom-btn:hover {
+      background: var(--secondary-hover);
+    }
+
+    /* Quick Info Strip Below Cards */
+    .system-status-strip {
+      max-width: 960px;
+      margin: 40px auto 0;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 18px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 0.85rem;
+    }
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+    }
+    .status-item strong {
+      color: var(--dark);
+    }
+
+    /* ========================================================
+       MODALS & SLIDE-OVER WORKSPACES
+       ======================================================== */
+    .workspace-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .workspace-overlay.show {
+      display: flex;
+      opacity: 1;
+    }
+    .workspace-modal {
+      background: white;
+      width: 100%;
+      max-width: 900px;
+      max-height: 90vh;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes modalSlideUp {
+      from { transform: translateY(30px) scale(0.97); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .modal-header {
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+    }
+    .modal-title-group h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--dark);
+    }
+    .modal-title-group p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+    .modal-close-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #94a3b8;
+      border-radius: 8px;
+      padding: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .modal-close-btn:hover {
+      background: #e2e8f0;
+      color: var(--dark);
+    }
+    .modal-body {
+      padding: 24px 28px;
+      overflow-y: auto;
+    }
+
+    /* Sub-Interface Styles */
+    .trip-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .full-width {
+      grid-column: span 2;
+    }
+    .results-container {
+      margin-top: 24px;
+      border-top: 1px solid var(--border);
+      padding-top: 20px;
+    }
+    .plan-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      margin-bottom: 14px;
+      transition: all 0.2s ease;
+      background: white;
+    }
+    .plan-card:hover {
+      border-color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+    .plan-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .plan-title {
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .plan-meta {
+      display: flex;
+      gap: 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .price-tag {
+      color: var(--secondary);
+      background: var(--secondary-light);
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .duration-tag {
+      color: var(--primary);
+      background: var(--primary-light);
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .steps-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 10px;
+      padding-left: 8px;
+    }
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.84rem;
+      color: #334155;
+    }
+    .step-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+
+    /* CSV Ledger Table */
+    .csv-table-wrapper {
+      max-height: 380px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    .csv-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      text-align: left;
+    }
+    .csv-table th {
+      background: #f1f5f9;
+      padding: 10px 14px;
+      font-weight: 600;
+      color: #475569;
+      position: sticky;
+      top: 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .csv-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #1e293b;
+    }
+    .csv-table tr:hover td {
+      background: #f8fafc;
+    }
+
+    /* Toast Notification */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .toast {
+      background: #1e293b;
+      color: white;
+      padding: 14px 20px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 280px;
+      max-width: 420px;
+      animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .toast.success { border-left: 4px solid var(--success); }
+    .toast.danger { border-left: 4px solid var(--danger); }
+    .toast.info { border-left: 4px solid var(--primary); }
+    @keyframes toastIn {
+      from { transform: translateX(50px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @media (max-width: 768px) {
+      .main-cards-grid {
+        grid-template-columns: 1fr;
+      }
+      .trip-form-grid {
+        grid-template-columns: 1fr;
+      }
+      .full-width {
+        grid-column: span 1;
+      }
+      .hero-title {
+        font-size: 2rem;
+      }
+      .auth-body {
+        padding: 24px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background decorative blobs -->
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="container nav-inner">
+      <div class="brand-logo">
+        <div class="brand-icon">
+          <!-- Compass SVG -->
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+          </svg>
+        </div>
+        <div>
+          <span>Smart AI Tour</span>
+          <span class="brand-badge">Engine v1.0</span>
+        </div>
+      </div>
+
+      <div class="nav-actions">
+        <!-- Auth Controls (Shown when logged in) -->
+        <div id="nav-user-info" style="display: none; align-items: center; gap: 12px;">
+          <button class="btn btn-outline btn-sm" onclick="openCsvModal()" title="View and Download CSV Login Records">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            Credentials CSV (<span id="cred-count-badge">1</span>)
+          </button>
+          <span id="current-user-name" style="font-weight: 600; font-size: 0.9rem; color: #1e293b;">Traveler</span>
+          <button class="btn btn-outline btn-sm btn-danger-outline" onclick="logoutUser()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ========================================================
+       VIEW 1: AUTHENTICATION (LOGIN & SIGN UP)
+       ======================================================== -->
+  <section id="auth-view" class="view-section active">
+    <div class="auth-wrapper">
+      <div class="auth-card">
+        <div class="auth-header">
+          <h2>Welcome to Smart AI Tour</h2>
+          <p>Real-Time Multimodal Travel & Tour Optimization</p>
+        </div>
+
+        <!-- Auth Tabs -->
+        <div class="auth-tabs">
+          <button class="auth-tab-btn active" id="tab-btn-signin" onclick="switchAuthTab('signin')">Sign In</button>
+          <button class="auth-tab-btn" id="tab-btn-signup" onclick="switchAuthTab('signup')">Create Account</button>
+        </div>
+
+        <div class="auth-body">
+          <!-- SIGN IN FORM -->
+          <form id="signin-form" onsubmit="handleSignIn(event)">
+            <div class="form-group">
+              <label class="form-label" for="signin-email">Email or Username</label>
+              <div class="input-wrapper">
+                <span class="input-icon-left">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                </span>
+                <input type="text" id="signin-email" class="form-input" placeholder="traveler@smartai.com" required>
+              </div>
+              <span class="field-error" id="signin-email-error">Please enter a valid email or username</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="signin-password">Password</label>
+              <div class="input-wrapper">
+                <span class="input-icon-left">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </span>
+                <input type="password" id="signin-password" class="form-input" placeholder="••••••••" required>
+                <button type="button" class="input-icon-right" onclick="togglePasswordVisibility('signin-password', this)">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </button>
+              </div>
+              <span class="field-error" id="signin-password-error">Password must be at least 6 characters</span>
+            </div>
+
+            <div class="remember-forgot">
+              <label class="checkbox-label">
+                <input type="checkbox" id="signin-remember" checked>
+                <span>Remember me</span>
+              </label>
+              <a href="javascript:void(0)" onclick="fillDemoCredentials()" style="color: var(--primary); text-decoration: none; font-weight: 600;">Fill Demo</a>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 13px;">
+              <span>Sign In & Continue</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
+
+            <div class="demo-account-hint">
+              <span><strong>Demo User:</strong> traveler@smartai.com</span>
+              <button type="button" class="btn btn-outline btn-sm" onclick="fillDemoCredentials()">Auto-Fill</button>
+            </div>
+          </form>
+
+          <!-- SIGN UP FORM -->
+          <form id="signup-form" style="display: none;" onsubmit="handleSignUp(event)">
+            <div class="form-group">
+              <label class="form-label" for="signup-name">Full Name</label>
+              <div class="input-wrapper">
+                <span class="input-icon-left">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </span>
+                <input type="text" id="signup-name" class="form-input" placeholder="e.g. Aditi Sharma" required oninput="validateSignupField('name')">
+              </div>
+              <span class="field-error" id="signup-name-error">Please enter your full name (minimum 3 characters)</span>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="signup-email">Email Address</label>
+                <div class="input-wrapper">
+                  <span class="input-icon-left">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                  </span>
+                  <input type="email" id="signup-email" class="form-input" placeholder="aditi@example.com" required oninput="validateSignupField('email')">
+                </div>
+                <span class="field-error" id="signup-email-error">Enter a valid email address</span>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="signup-phone">Phone Number</label>
+                <div class="input-wrapper">
+                  <span class="input-icon-left">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                  </span>
+                  <input type="tel" id="signup-phone" class="form-input" placeholder="+91 9876543210" required oninput="validateSignupField('phone')">
+                </div>
+                <span class="field-error" id="signup-phone-error">Enter a valid 10-digit mobile number</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="signup-password">Password</label>
+              <div class="input-wrapper">
+                <span class="input-icon-left">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </span>
+                <input type="password" id="signup-password" class="form-input" placeholder="At least 8 characters" required oninput="checkPasswordStrength(this.value)">
+                <button type="button" class="input-icon-right" onclick="togglePasswordVisibility('signup-password', this)">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </button>
+              </div>
+              <div class="strength-meter">
+                <div class="strength-bar" id="strength-bar"></div>
+              </div>
+              <span class="field-hint" id="strength-hint">Use uppercase, number & symbol for maximum security</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="signup-confirm-password">Confirm Password</label>
+              <div class="input-wrapper">
+                <span class="input-icon-left">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </span>
+                <input type="password" id="signup-confirm-password" class="form-input" placeholder="Repeat your password" required oninput="validateSignupField('confirm')">
+              </div>
+              <span class="field-error" id="signup-confirm-error">Passwords do not match</span>
+            </div>
+
+            <div class="form-group">
+              <label class="checkbox-label" style="font-size: 0.82rem;">
+                <input type="checkbox" id="signup-terms" required>
+                <span>I agree to store my session credentials in the system CSV registry and accept Terms.</span>
+              </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 13px;">
+              <span>Create Account & Save to CSV</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       VIEW 2: HOME DASHBOARD (AFTER LOGIN)
+       ======================================================== -->
+  <section id="home-view" class="view-section">
+    <div class="container home-wrapper">
+      <!-- Hero Section -->
+      <div class="hero-banner">
+        <div class="hero-pill">
+          <span class="status-dot"></span>
+          <span>AI Engine Connected • Southern Zone Transport Graph Active</span>
+        </div>
+        <h1 class="hero-title">Plan Your Journey with <span>Adaptive Intelligence</span></h1>
+        <p class="hero-desc">
+          From door-to-door multi-modal route navigation to multi-day tour pacing and real-time checkpoint rerouting. Select your mode below to get started.
+        </p>
+      </div>
+
+      <!-- THE TWO MAIN CARDS IN THE MIDDLE -->
+      <div class="main-cards-grid">
+        <!-- CARD 1: AI TRIP PLANNER -->
+        <div class="feature-card trip-card" onclick="openTripPlanner()">
+          <div class="card-top">
+            <span class="card-badge">Point-to-Point Multi-Modal</span>
+            <div class="card-icon-wrapper">
+              <!-- Route Navigation Icon -->
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="6" cy="19" r="3"></circle>
+                <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"></path>
+                <circle cx="18" cy="5" r="3"></circle>
+              </svg>
+            </div>
+            <h2 class="card-title">AI Trip Planner</h2>
+            <h3 class="card-tagline">Smart Door-to-Door Route Optimization</h3>
+            <p class="card-desc">
+              Designed for targeted travel from your exact starting coordinates (e.g. college hostel, residence) to your final destination. Unifies road, rail, metro, and cabs with balanced cost and timing.
+            </p>
+            <ul class="card-features-list">
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span>Automated address geocoding with ArcGIS fallback</span>
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span>OSM transport node discovery (Bus, Metro, Rail)</span>
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span>Multi-plan generation sorted by cost & duration</span>
+              </li>
+            </ul>
+          </div>
+          <button class="card-bottom-btn" onclick="event.stopPropagation(); openTripPlanner()">
+            <span>Launch AI Trip Planner</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </button>
+        </div>
+
+        <!-- CARD 2: AI TOUR PLANNER -->
+        <div class="feature-card tour-card" onclick="openTourPlanner()">
+          <div class="card-top">
+            <span class="card-badge">Multi-Day & Experience Engine</span>
+            <div class="card-icon-wrapper">
+              <!-- Mountain / Tour Compass Icon -->
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 3l4 8 5-5 5 15H2L8 3z"></path>
+              </svg>
+            </div>
+            <h2 class="card-title">AI Tour Planner</h2>
+            <h3 class="card-tagline">Curated Itineraries & Real-Time Assistance</h3>
+            <p class="card-desc">
+              Designed for multi-destination holidays, sightseeing excursions, and leisure vacations. Optimizes attraction operating hours, sleeping/rest schedules, and dynamically adapts to live delays.
+            </p>
+            <ul class="card-features-list">
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span>Day-by-day attraction scheduling & pacing</span>
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span>Sleeping hours & accommodation rest reminders</span>
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span>Context-aware dynamic replanning on live delays</span>
+              </li>
+            </ul>
+          </div>
+          <button class="card-bottom-btn" onclick="event.stopPropagation(); openTourPlanner()">
+            <span>Launch AI Tour Planner</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Info Strip -->
+      <div class="system-status-strip">
+        <div class="status-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+          <span>Dataset: <strong>Southern Zone OSM (0.52 GB)</strong></span>
+        </div>
+        <div class="status-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          <span>Base Node: <strong>IIIT Kottayam (9.7564° N, 76.6494° E)</strong></span>
+        </div>
+        <div class="status-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+          <span>Credential Registry: <strong>credentials.csv (Live Sync)</strong></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       MODAL 1: INTERACTIVE AI TRIP PLANNER WORKSPACE
+       ======================================================== -->
+  <div class="workspace-overlay" id="trip-modal">
+    <div class="workspace-modal">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3>AI Trip Planner • Point-to-Point Multi-Modal</h3>
+          <p>Grounding from Objective 1 & 2 (feature_1_test.ipynb + shared.py)</p>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('trip-modal')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <form id="trip-query-form" onsubmit="generateTripPlans(event)">
+          <div class="trip-form-grid">
+            <div class="form-group full-width">
+              <label class="form-label">Starting Point (Boarding Address)</label>
+              <div class="input-wrapper">
+                <span class="input-icon-left">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>
+                </span>
+                <input type="text" id="trip-origin" class="form-input" value="Nila Hostel B Block IIIT Kottayam, QM35+H33, Nechipuzhoor, Keralam 686635" required>
+              </div>
+              <span class="field-hint">Resolved via ArcGIS: Lat 9.7495°, Lon 76.6257°</span>
+            </div>
+
+            <div class="form-group full-width">
+              <label class="form-label">Destination Point (Arrival Address)</label>
+              <div class="input-wrapper">
+                <span class="input-icon-left">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                </span>
+                <input type="text" id="trip-destination" class="form-input" value="Kochi, Keralam" required>
+              </div>
+              <span class="field-hint">Resolved via ArcGIS: Lat 9.9576°, Lon 76.2512°</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Date of Travel (DD/MM/YYYY)</label>
+              <input type="text" id="trip-date" class="form-input" value="16/11/2026" pattern="^(?:(?:0[1-9]|[12][0-9]|3[01])/(?:0[13578]|1[02])|(?:0[1-9]|[12][0-9]|30)/(?:0[469]|11)|(?:0[1-9]|1[0-9]|2[0-8])/02)/(?:19|20)\d\d$" required>
+              <span class="field-hint">Format validated with system regex</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Start Time (12h AM/PM or 24h)</label>
+              <input type="text" id="trip-time" class="form-input" value="05:00 AM" required>
+              <span class="field-hint">e.g. 05:00 AM</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Optimization Objective</label>
+              <select id="trip-objective" class="form-input" style="padding-left: 14px;">
+                <option value="balanced" selected>Balanced (Cost + Time + Convenience)</option>
+                <option value="fastest">Fastest Express Route</option>
+                <option value="cheapest">Most Economical (Public Transit)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Number of Plans to Generate</label>
+              <select id="trip-plan-count" class="form-input" style="padding-left: 14px;">
+                <option value="3" selected>3 Alternative Plans</option>
+                <option value="2">2 Alternative Plans</option>
+                <option value="4">4 Alternative Plans</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px; justify-content: flex-end;">
+            <button type="button" class="btn btn-outline" onclick="closeModal('trip-modal')">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btn-generate-plans">
+              <span>Compute Optimized Routes</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            </button>
+          </div>
+        </form>
+
+        <!-- Generated Plans Results -->
+        <div class="results-container" id="trip-results" style="display: none;">
+          <h4 style="margin-bottom: 16px; font-weight: 700; color: var(--dark); display: flex; align-items: center; justify-content: space-between;">
+            <span>Generated Route Options (3 Found)</span>
+            <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">Sorted by Multi-Factor Score</span>
+          </h4>
+
+          <!-- Plan 1 -->
+          <div class="plan-card">
+            <div class="plan-card-header">
+              <div class="plan-title">
+                <span>Option 1: Recommended Multi-Modal Balanced</span>
+                <span class="card-badge" style="background:#dcfce7; color:#15803d; margin:0;">Optimal</span>
+              </div>
+              <div class="plan-meta">
+                <span class="duration-tag">⏱ 2 hrs 45 mins</span>
+                <span class="price-tag">₹ 240 / person</span>
+              </div>
+            </div>
+            <div class="steps-timeline">
+              <div class="step-item">
+                <span class="step-dot" style="background:#3b82f6;"></span>
+                <span><strong>05:00 AM:</strong> Campus Auto / Feeder cab from Nila Hostel to Pala KSRTC Bus Terminal (14 km • 25m)</span>
+              </div>
+              <div class="step-item">
+                <span class="step-dot" style="background:#f59e0b;"></span>
+                <span><strong>05:35 AM:</strong> Fast Passenger Bus to Kottayam Railway Station (28 km • 45m)</span>
+              </div>
+              <div class="step-item">
+                <span class="step-dot" style="background:#10b981;"></span>
+                <span><strong>06:30 AM:</strong> Vande Bharat / Express Train from Kottayam (KTYM) to Ernakulam Jn (ERS) (60 km • 42m)</span>
+              </div>
+              <div class="step-item">
+                <span class="step-dot" style="background:#8b5cf6;"></span>
+                <span><strong>07:20 AM:</strong> Kochi Metro (Maharajas to destination station • 15m) → Arrive 07:45 AM</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Plan 2 -->
+          <div class="plan-card">
+            <div class="plan-card-header">
+              <div class="plan-title">
+                <span>Option 2: Fastest Express Route</span>
+              </div>
+              <div class="plan-meta">
+                <span class="duration-tag">⏱ 1 hr 55 mins</span>
+                <span class="price-tag">₹ 680 / person</span>
+              </div>
+            </div>
+            <div class="steps-timeline">
+              <div class="step-item">
+                <span class="step-dot" style="background:#3b82f6;"></span>
+                <span><strong>05:00 AM:</strong> Direct AC Cab from IIIT Kottayam to Kottayam Station (35m)</span>
+              </div>
+              <div class="step-item">
+                <span class="step-dot" style="background:#10b981;"></span>
+                <span><strong>05:45 AM:</strong> Superfast Intercity Express to Ernakulam Town (North) (45m)</span>
+              </div>
+              <div class="step-item">
+                <span class="step-dot" style="background:#3b82f6;"></span>
+                <span><strong>06:35 AM:</strong> Pre-booked Ride to final destination in Kochi (20m) → Arrive 06:55 AM</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Plan 3 -->
+          <div class="plan-card">
+            <div class="plan-card-header">
+              <div class="plan-title">
+                <span>Option 3: Budget Transit Saver</span>
+              </div>
+              <div class="plan-meta">
+                <span class="duration-tag">⏱ 3 hrs 20 mins</span>
+                <span class="price-tag">₹ 110 / person</span>
+              </div>
+            </div>
+            <div class="steps-timeline">
+              <div class="step-item">
+                <span class="step-dot" style="background:#f59e0b;"></span>
+                <span><strong>05:10 AM:</strong> Local Bus from Nechipuzhoor to Pala Central (20m)</span>
+              </div>
+              <div class="step-item">
+                <span class="step-dot" style="background:#f59e0b;"></span>
+                <span><strong>05:40 AM:</strong> Direct KSRTC SilverLine / Super Fast Bus to Vyttila Mobility Hub, Kochi (2h 15m)</span>
+              </div>
+              <div class="step-item">
+                <span class="step-dot" style="background:#8b5cf6;"></span>
+                <span><strong>08:00 AM:</strong> Kochi City Bus or Metro to final destination (30m) → Arrive 08:30 AM</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MODAL 2: INTERACTIVE AI TOUR PLANNER WORKSPACE
+       ======================================================== -->
+  <div class="workspace-overlay" id="tour-modal">
+    <div class="workspace-modal">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3>AI Tour Planner • Curated Itineraries & Real-Time Engine</h3>
+          <p>Multi-day vacation, attraction timing & sleep hour adaptation</p>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('tour-modal')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <form id="tour-query-form" onsubmit="generateTourPlan(event)">
+          <div class="trip-form-grid">
+            <div class="form-group full-width">
+              <label class="form-label">Tour Destination & Region</label>
+              <select id="tour-region" class="form-input" style="padding-left: 14px;">
+                <option value="kerala" selected>Kerala Highlights (Kottayam → Munnar Hills → Alleppey Backwaters → Fort Kochi)</option>
+                <option value="wayanad">Wayanad Wildlife & Mist Trails (3-Day Nature & Trekking)</option>
+                <option value="golden">Golden Triangle Heritage (Delhi → Agra → Jaipur)</option>
+                <option value="goa">Coastal Goa & Old Latin Quarter (4-Day Leisure)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Tour Duration</label>
+              <select id="tour-duration" class="form-input" style="padding-left: 14px;">
+                <option value="3" selected>3 Days / 2 Nights</option>
+                <option value="2">2 Days / 1 Night (Weekend Getaway)</option>
+                <option value="5">5 Days / 4 Nights (Full Circuit)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Travel Style & Pacing</label>
+              <select id="tour-pace" class="form-input" style="padding-left: 14px;">
+                <option value="balanced" selected>Balanced (Relaxed mornings + Scheduled evenings)</option>
+                <option value="active">Active Exploration (High activity density)</option>
+                <option value="scenic">Leisure & Wellness (Focus on resorts & nature)</option>
+              </select>
+            </div>
+
+            <div class="form-group full-width">
+              <label class="form-label">Accommodation & Preference Notes</label>
+              <input type="text" id="tour-preferences" class="form-input" value="Boutique heritage stays, local cuisine, sleep window minimum 7.5 hours" style="padding-left: 14px;">
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px; justify-content: flex-end;">
+            <button type="button" class="btn btn-outline" onclick="closeModal('tour-modal')">Cancel</button>
+            <button type="submit" class="btn btn-secondary">
+              <span>Synthesize AI Tour Itinerary</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            </button>
+          </div>
+        </form>
+
+        <!-- Generated Tour Itinerary -->
+        <div class="results-container" id="tour-results" style="display: none;">
+          <!-- Dynamic Alert Banner -->
+          <div style="background: #fef3c7; border: 1px solid #fde68a; border-radius: 8px; padding: 12px 16px; margin-bottom: 18px; display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: #92400e;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            <span><strong>Real-Time Context Engine:</strong> Monitored weather is clear; sleep cycles protected; checkpoint timings aligned with attraction visiting hours.</span>
+          </div>
+
+          <!-- Day 1 -->
+          <div class="plan-card">
+            <div class="plan-card-header">
+              <div class="plan-title">
+                <span>Day 1: Kottayam → Alleppey Canals & Sunset Shikara</span>
+              </div>
+              <span class="card-badge" style="background:#e0e7ff; color:#4338ca; margin:0;">Day 1</span>
+            </div>
+            <div class="steps-timeline">
+              <div class="step-item">
+                <span class="step-dot" style="background:#10b981;"></span>
+                <span><strong>08:30 AM:</strong> Departure from origin via Scenic AC Transit to Alleppey (52 km • 1h 20m)</span>
+              </div>
+              <div class="step-item">
+                <span class="step-dot" style="background:#3b82f6;"></span>
+                <span><strong>11:00 AM:</strong> Check-in at Backwater Resort & Welcome Refreshments</span>
+              </div>
+              <div class="step-item">
+                <span class="step-dot" style="background:#f59e0b;"></span>
+                <span><strong>03:30 PM:</strong> Curated Shikara boat exploration through Kuttanad paddy fields & canals</span>
+              </div>
+              <div class="step-item">
+                <span class="step-dot" style="background:#64748b;"></span>
+                <span><strong>10:30 PM - 07:00 AM:</strong> 💤 <strong>Sleeping Hours Protected</strong> (Quiet hours reminder active)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Day 2 -->
+          <div class="plan-card">
+            <div class="plan-card-header">
+              <div class="plan-title">
+                <span>Day 2: Alleppey → Munnar Tea Highlands</span>
+              </div>
+              <span class="card-badge" style="background:#e0e7ff; color:#4338ca; margin:0;">Day 2</span>
+            </div>
+            <div class="steps-timeline">
+              <div class="step-item">
+                <span class="step-dot" style="background:#10b981;"></span>
+                <span><strong>07:30 AM:</strong> Sunrise breakfast & check-out</span>
+              </div>
+              <div class="step-item">
+                <span class="step-dot" style="background:#3b82f6;"></span>
+                <span><strong>08:45 AM:</strong> Hill climb route to Munnar via Cheeyappara Waterfalls stopover</span>
+              </div>
+              <div class="step-item">
+                <span class="step-dot" style="background:#f59e0b;"></span>
+                <span><strong>02:30 PM:</strong> Tea Museum & Lockhart Gap panoramic viewpoint</span>
+              </div>
+              <div class="step-item">
+                <span class="step-dot" style="background:#64748b;"></span>
+                <span><strong>10:00 PM:</strong> 💤 <strong>Rest & Recharge</strong> at Hilltop Cottage</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Day 3 -->
+          <div class="plan-card">
+            <div class="plan-card-header">
+              <div class="plan-title">
+                <span>Day 3: Munnar → Fort Kochi Heritage & Return</span>
+              </div>
+              <span class="card-badge" style="background:#e0e7ff; color:#4338ca; margin:0;">Day 3</span>
+            </div>
+            <div class="steps-timeline">
+              <div class="step-item">
+                <span class="step-dot" style="background:#10b981;"></span>
+                <span><strong>08:00 AM:</strong> Morning walk in tea estates & departure toward Kochi coast</span>
+              </div>
+              <div class="step-item">
+                <span class="step-dot" style="background:#3b82f6;"></span>
+                <span><strong>01:30 PM:</strong> Chinese Fishing Nets, Jew Town & Mattancherry Palace visit</span>
+              </div>
+              <div class="step-item">
+                <span class="step-dot" style="background:#8b5cf6;"></span>
+                <span><strong>06:00 PM:</strong> Smooth return transit or drop-off at Cochin International Airport (COK)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MODAL 3: CREDENTIALS CSV LEDGER
+       ======================================================== -->
+  <div class="workspace-overlay" id="csv-modal">
+    <div class="workspace-modal" style="max-width: 820px;">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3>Credentials CSV Database Ledger</h3>
+          <p>Login & signup records stored in format specified for project credentials</p>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('csv-modal')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <span style="font-size: 0.88rem; color: var(--text-muted);">
+            Active File: <code>artifacts/file_generation/ttl=63d/output/credentials.csv</code>
+          </span>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-outline btn-sm" onclick="copyCsvRaw()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Copy Raw CSV
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="downloadCredentialsCsv()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Download credentials.csv
+            </button>
+          </div>
+        </div>
+
+        <div class="csv-table-wrapper">
+          <table class="csv-table" id="csv-table">
+            <thead>
+              <tr>
+                <th>User ID</th>
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Registration Time</th>
+                <th>Last Login</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="csv-table-body">
+              <!-- Dynamically populated from JS credentials store -->
+            </tbody>
+          </table>
+        </div>
+
+        <div style="font-size: 0.8rem; color: var(--text-muted); background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
+          💡 <strong>CSV Auto-Persistence:</strong> Every successful login and registration generates a persistent record. The CSV can be saved automatically to local downloads or synced to disk via the companion Python server.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- ========================================================
+       JAVASCRIPT APPLICATION LOGIC
+       ======================================================== -->
+  <script>
+    // --- In-Memory & LocalStorage Credentials Registry ---
+    const STORAGE_KEY = 'smart_ai_tour_credentials';
+
+    // Default Seed Record
+    const DEFAULT_RECORDS = [
+      {
+        userId: 'USR-1001',
+        fullName: 'Demo Traveler',
+        email: 'traveler@smartai.com',
+        phone: '+91 9876543210',
+        regTime: '2026-10-09 01:15:00',
+        lastLogin: '2026-10-09 01:15:22',
+        status: 'Active'
+      }
+    ];
+
+    let credentialsDatabase = [];
+
+    // Load from LocalStorage or initialize
+    function initDatabase() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          credentialsDatabase = JSON.parse(stored);
+        } else {
+          credentialsDatabase = [...DEFAULT_RECORDS];
+          saveDatabase();
+        }
+      } catch (e) {
+        credentialsDatabase = [...DEFAULT_RECORDS];
+      }
+      updateCsvTable();
+    }
+
+    function saveDatabase() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(credentialsDatabase));
+      } catch (e) {
+        console.warn('Could not save to localStorage:', e);
+      }
+      updateCsvTable();
+    }
+
+    // Current Session State
+    let currentUser = null;
+
+    // Switch between Sign In and Sign Up tabs
+    function switchAuthTab(tab) {
+      const signinForm = document.getElementById('signin-form');
+      const signupForm = document.getElementById('signup-form');
+      const tabSignIn = document.getElementById('tab-btn-signin');
+      const tabSignUp = document.getElementById('tab-btn-signup');
+
+      if (tab === 'signin') {
+        signinForm.style.display = 'block';
+        signupForm.style.display = 'none';
+        tabSignIn.classList.add('active');
+        tabSignUp.classList.remove('active');
+      } else {
+        signinForm.style.display = 'none';
+        signupForm.style.display = 'block';
+        tabSignIn.classList.remove('active');
+        tabSignUp.classList.add('active');
+      }
+    }
+
+    // Toggle Password Visibility
+    function togglePasswordVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></line><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+      } else {
+        input.type = 'password';
+        btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+      }
+    }
+
+    // Quick fill demo credentials
+    function fillDemoCredentials() {
+      document.getElementById('signin-email').value = 'traveler@smartai.com';
+      document.getElementById('signin-password').value = 'Traveler@2026';
+      showToast('Demo credentials prefilled!', 'info');
+    }
+
+    // Password Strength Meter
+    function checkPasswordStrength(password) {
+      const bar = document.getElementById('strength-bar');
+      const hint = document.getElementById('strength-hint');
+      let score = 0;
+
+      if (!password) {
+        bar.style.width = '0%';
+        hint.textContent = 'Use uppercase, number & symbol for maximum security';
+        return;
+      }
+
+      if (password.length >= 6) score += 25;
+      if (password.length >= 10) score += 20;
+      if (/[A-Z]/.test(password)) score += 20;
+      if (/[0-9]/.test(password)) score += 20;
+      if (/[^A-Za-z0-9]/.test(password)) score += 15;
+
+      bar.style.width = Math.min(score, 100) + '%';
+
+      if (score < 40) {
+        bar.style.backgroundColor = '#ef4444';
+        hint.textContent = 'Weak password — add numbers & capital letters';
+      } else if (score < 75) {
+        bar.style.backgroundColor = '#f59e0b';
+        hint.textContent = 'Medium password — add symbols like @, #, $';
+      } else {
+        bar.style.backgroundColor = '#10b981';
+        hint.textContent = 'Strong password! High security protection.';
+      }
+    }
+
+    // Inline field validation for Signup
+    function validateSignupField(field) {
+      if (field === 'name') {
+        const val = document.getElementById('signup-name').value.trim();
+        const err = document.getElementById('signup-name-error');
+        if (val.length < 3) err.classList.add('show');
+        else err.classList.remove('show');
+      } else if (field === 'email') {
+        const val = document.getElementById('signup-email').value.trim();
+        const err = document.getElementById('signup-email-error');
+        const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+        if (!valid) err.classList.add('show');
+        else err.classList.remove('show');
+      } else if (field === 'phone') {
+        const val = document.getElementById('signup-phone').value.trim();
+        const err = document.getElementById('signup-phone-error');
+        const digits = val.replace(/\D/g, '');
+        if (digits.length < 10) err.classList.add('show');
+        else err.classList.remove('show');
+      } else if (field === 'confirm') {
+        const p1 = document.getElementById('signup-password').value;
+        const p2 = document.getElementById('signup-confirm-password').value;
+        const err = document.getElementById('signup-confirm-error');
+        if (p1 !== p2) err.classList.add('show');
+        else err.classList.remove('show');
+      }
+    }
+
+    // Helper: format current timestamp
+    function getNowString() {
+      const now = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      return `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    }
+
+    // Handle Sign In Submission
+    function handleSignIn(e) {
+      e.preventDefault();
+      const emailInput = document.getElementById('signin-email').value.trim();
+      const passwordInput = document.getElementById('signin-password').value;
+
+      if (!emailInput || passwordInput.length < 4) {
+        showToast('Please enter both email and password', 'danger');
+        return;
+      }
+
+      // Check if user exists or log new entry
+      let user = credentialsDatabase.find(u => u.email.toLowerCase() === emailInput.toLowerCase());
+      const now = getNowString();
+
+      if (user) {
+        user.lastLogin = now;
+      } else {
+        // Automatically create account record on first valid signin
+        const newId = 'USR-' + (1001 + credentialsDatabase.length);
+        user = {
+          userId: newId,
+          fullName: emailInput.split('@')[0],
+          email: emailInput,
+          phone: '+91 9800000000',
+          regTime: now,
+          lastLogin: now,
+          status: 'Active'
+        };
+        credentialsDatabase.push(user);
+      }
+
+      saveDatabase();
+      currentUser = user;
+
+      // Post to backend server if active
+      syncWithBackend(user, 'LOGIN');
+
+      showToast(`Welcome back, ${user.fullName}! Login credentials recorded in CSV.`, 'success');
+      showHomeDashboard();
+    }
+
+    // Handle Sign Up Submission
+    function handleSignUp(e) {
+      e.preventDefault();
+      const name = document.getElementById('signup-name').value.trim();
+      const email = document.getElementById('signup-email').value.trim();
+      const phone = document.getElementById('signup-phone').value.trim();
+      const password = document.getElementById('signup-password').value;
+      const confirm = document.getElementById('signup-confirm-password').value;
+      const terms = document.getElementById('signup-terms').checked;
+
+      // Validation
+      if (name.length < 3) {
+        showToast('Full name must be at least 3 characters', 'danger');
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showToast('Please enter a valid email address', 'danger');
+        return;
+      }
+      if (phone.replace(/\D/g, '').length < 10) {
+        showToast('Please enter a valid 10-digit mobile number', 'danger');
+        return;
+      }
+      if (password.length < 6) {
+        showToast('Password must be at least 6 characters', 'danger');
+        return;
+      }
+      if (password !== confirm) {
+        showToast('Passwords do not match', 'danger');
+        return;
+      }
+      if (!terms) {
+        showToast('Please accept the credentials registry terms', 'danger');
+        return;
+      }
+
+      const now = getNowString();
+      const newId = 'USR-' + (1001 + credentialsDatabase.length);
+      const newUser = {
+        userId: newId,
+        fullName: name,
+        email: email,
+        phone: phone,
+        regTime: now,
+        lastLogin: now,
+        status: 'Active'
+      };
+
+      credentialsDatabase.push(newUser);
+      saveDatabase();
+      currentUser = newUser;
+
+      // Post to backend server if active
+      syncWithBackend(newUser, 'REGISTER');
+
+      showToast(`Account successfully created for ${name}! Credential appended to CSV.`, 'success');
+      showHomeDashboard();
+    }
+
+    // Switch View to Home Dashboard
+    function showHomeDashboard() {
+      document.getElementById('auth-view').classList.remove('active');
+      document.getElementById('home-view').classList.add('active');
+
+      document.getElementById('nav-user-info').style.display = 'flex';
+      document.getElementById('current-user-name').textContent = currentUser.fullName;
+      document.getElementById('cred-count-badge').textContent = credentialsDatabase.length;
+    }
+
+    // Logout
+    function logoutUser() {
+      currentUser = null;
+      document.getElementById('home-view').classList.remove('active');
+      document.getElementById('auth-view').classList.add('active');
+      document.getElementById('nav-user-info').style.display = 'none';
+      showToast('Logged out successfully', 'info');
+    }
+
+    // Modal Handlers
+    function openTripPlanner() {
+      document.getElementById('trip-modal').classList.add('show');
+    }
+    function openTourPlanner() {
+      document.getElementById('tour-modal').classList.add('show');
+    }
+    function openCsvModal() {
+      updateCsvTable();
+      document.getElementById('csv-modal').classList.add('show');
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('show');
+    }
+
+    // Trip Plan Computation Simulation
+    function generateTripPlans(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-generate-plans');
+      btn.innerHTML = `<span>Calculating Multi-Modal Graph...</span>`;
+      btn.disabled = true;
+
+      setTimeout(() => {
+        btn.innerHTML = `<span>Compute Optimized Routes</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`;
+        btn.disabled = false;
+        document.getElementById('trip-results').style.display = 'block';
+        showToast('Computed 3 optimized multi-modal route solutions!', 'success');
+      }, 700);
+    }
+
+    // Tour Itinerary Computation Simulation
+    function generateTourPlan(e) {
+      e.preventDefault();
+      document.getElementById('tour-results').style.display = 'block';
+      showToast('Curated 3-Day adaptive tour itinerary generated!', 'success');
+    }
+
+    // Render CSV Table in Modal
+    function updateCsvTable() {
+      const tbody = document.getElementById('csv-table-body');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      credentialsDatabase.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${escapeHtml(row.userId)}</strong></td>
+          <td>${escapeHtml(row.fullName)}</td>
+          <td>${escapeHtml(row.email)}</td>
+          <td>${escapeHtml(row.phone)}</td>
+          <td>${escapeHtml(row.regTime)}</td>
+          <td>${escapeHtml(row.lastLogin)}</td>
+          <td><span style="background:#ecfdf5; color:#059669; padding:2px 8px; border-radius:12px; font-weight:600; font-size:0.75rem;">${escapeHtml(row.status)}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const badge = document.getElementById('cred-count-badge');
+      if (badge) badge.textContent = credentialsDatabase.length;
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // Generate CSV String
+    function generateCsvString() {
+      const headers = ['User_ID', 'Full_Name', 'Email', 'Phone', 'Registration_Timestamp', 'Last_Login_Timestamp', 'Status'];
+      const lines = [headers.join(',')];
+
+      credentialsDatabase.forEach(r => {
+        const line = [
+          `"${r.userId}"`,
+          `"${r.fullName.replace(/"/g, '""')}"`,
+          `"${r.email.replace(/"/g, '""')}"`,
+          `"${r.phone.replace(/"/g, '""')}"`,
+          `"${r.regTime}"`,
+          `"${r.lastLogin}"`,
+          `"${r.status}"`
+        ];
+        lines.push(line.join(','));
+      });
+
+      return lines.join('\n');
+    }
+
+    // Download CSV
+    function downloadCredentialsCsv() {
+      const csvContent = generateCsvString();
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'credentials.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast('Downloaded credentials.csv successfully!', 'success');
+    }
+
+    // Copy Raw CSV to Clipboard
+    function copyCsvRaw() {
+      const csvContent = generateCsvString();
+      navigator.clipboard.writeText(csvContent).then(() => {
+        showToast('Raw CSV copied to clipboard!', 'info');
+      }).catch(() => {
+        showToast('Please download the CSV file', 'info');
+      });
+    }
+
+    // Backend Sync (Optional: Pings local Python server if running)
+    function syncWithBackend(userData, actionType) {
+      try {
+        fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user: userData, action: actionType })
+        }).then(res => res.json()).then(data => {
+          console.log('Synced with backend CSV:', data);
+        }).catch(err => {
+          // Silent fallback to browser CSV storage
+          console.log('Operating in standalone frontend mode (CSV stored in browser registry)');
+        });
+      } catch (e) {
+        // Fallback
+      }
+    }
+
+    // Toast Notification Utility
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <span>${escapeHtml(message)}</span>
+      `;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        setTimeout(() => toast.remove(), 400);
+      }, 3500);
+    }
+
+    // Close modal on escape or background click
+    window.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.workspace-overlay.show').forEach(m => m.classList.remove('show'));
+      }
+    });
+    document.querySelectorAll('.workspace-overlay').forEach(overlay => {
+      overlay.addEventListener('click', e => {
+        if (e.target === overlay) overlay.classList.remove('show');
+      });
+    });
+
+    // Initialize Database on load
+    window.addEventListener('DOMContentLoaded', () => {
+      initDatabase();
+    });
+  </script>
+</body>
+</html>
